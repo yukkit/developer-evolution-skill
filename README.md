@@ -14,6 +14,7 @@ It analyzes repeated decisions, corrections, frustrations, and collaboration pat
 - Produces numbered proposals that require explicit human approval.
 - Updates only a managed block in the global `AGENTS.md` after approval.
 - Uses incremental checkpoints to skip unchanged sessions.
+- Runs only when explicitly invoked as `$developer-evolution`.
 
 ## How it works
 
@@ -43,6 +44,8 @@ https://github.com/yukkit/developer-evolution-skill/tree/main/developer-evolutio
 ```
 
 The installed skill becomes available on the next turn.
+
+Implicit invocation is disabled because this skill reads private history and writes local analysis artifacts. Invoke it explicitly with `$developer-evolution` whenever you want it to run.
 
 ## Use
 
