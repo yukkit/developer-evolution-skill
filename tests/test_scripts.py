@@ -13,6 +13,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = REPO_ROOT / "developer-evolution"
 COLLECTOR = SKILL_ROOT / "scripts" / "collect_history.py"
+COMMITTER = SKILL_ROOT / "scripts" / "commit_checkpoint.py"
 INITIALIZER = SKILL_ROOT / "scripts" / "init_workspace.py"
 
 
@@ -74,6 +75,20 @@ def write_session(path: Path, session_id: str, user_text: str) -> None:
         },
     ]
     path.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+
+
+def append_user_message(path: Path, item_id: str, text: str) -> None:
+    row = {
+        "type": "response_item",
+        "payload": {
+            "type": "message",
+            "id": item_id,
+            "role": "user",
+            "content": [{"type": "input_text", "text": text}],
+        },
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row) + "\n")
 
 
 class ScriptTests(unittest.TestCase):
@@ -172,7 +187,209 @@ class ScriptTests(unittest.TestCase):
             self.assertIn("Prefer small, reviewable changes.", result.stdout)
             self.assertNotIn("Understood.", result.stdout)
 
+    def test_checkpoint_is_incremental_and_two_phase(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            codex_home = root / "codex"
+            session = codex_home / "sessions" / "one.jsonl"
+            checkpoint = codex_home / "personalization" / "processing-state.json"
+            first_bundle = root / "first.json"
+            proposal = root / "proposal.md"
+            write_session(session, "session-one", "Prefer explicit code.")
+            old_enough = datetime.now(tz=timezone.utc).timestamp() - 3600
+            os.utime(session, (old_enough, old_enough))
+
+            collect_command = [
+                sys.executable,
+                str(COLLECTOR),
+                "--codex-home",
+                str(codex_home),
+                "--checkpoint",
+                str(checkpoint),
+                "--min-idle-minutes",
+                "15",
+            ]
+            subprocess.run(
+                [*collect_command, "--output", str(first_bundle)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            first = json.loads(first_bundle.read_text(encoding="utf-8"))
+            self.assertEqual(first["summary"]["included_sessions"], 1)
+            self.assertEqual(first["summary"]["candidate_sessions"], 1)
+            self.assertFalse(checkpoint.exists(), "collection must not advance state")
+
+            proposal.write_text("# Analysis completed\n", encoding="utf-8")
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(COMMITTER),
+                    "--bundle",
+                    str(first_bundle),
+                    "--checkpoint",
+                    str(checkpoint),
+                    "--proposal",
+                    str(proposal),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            state = json.loads(checkpoint.read_text(encoding="utf-8"))
+            self.assertIn("session-one", state["sessions"])
+            repeated_commit = subprocess.run(
+                [
+                    sys.executable,
+                    str(COMMITTER),
+                    "--bundle",
+                    str(first_bundle),
+                    "--checkpoint",
+                    str(checkpoint),
+                    "--proposal",
+                    str(proposal),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertTrue(json.loads(repeated_commit.stdout)["already_committed"])
+
+            second_bundle = root / "second.json"
+            subprocess.run(
+                [*collect_command, "--output", str(second_bundle)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            second = json.loads(second_bundle.read_text(encoding="utf-8"))
+            self.assertEqual(second["summary"]["included_sessions"], 0)
+            self.assertEqual(second["summary"]["unchanged_by_metadata"], 1)
+
+            append_user_message(session, "user-2", "Avoid speculative abstractions.")
+            os.utime(session, (old_enough + 60, old_enough + 60))
+            changed_bundle = root / "changed.json"
+            subprocess.run(
+                [*collect_command, "--output", str(changed_bundle)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            changed = json.loads(changed_bundle.read_text(encoding="utf-8"))
+            self.assertEqual(changed["summary"]["included_sessions"], 1)
+
+            repeated_bundle = root / "repeated.json"
+            subprocess.run(
+                [*collect_command, "--output", str(repeated_bundle)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            repeated = json.loads(repeated_bundle.read_text(encoding="utf-8"))
+            self.assertEqual(
+                repeated["summary"]["included_sessions"],
+                1,
+                "an uncommitted candidate must be processed again",
+            )
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(COMMITTER),
+                    "--bundle",
+                    str(changed_bundle),
+                    "--checkpoint",
+                    str(checkpoint),
+                    "--proposal",
+                    str(proposal),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            final_bundle = root / "final.json"
+            subprocess.run(
+                [*collect_command, "--output", str(final_bundle)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            final = json.loads(final_bundle.read_text(encoding="utf-8"))
+            self.assertEqual(final["summary"]["included_sessions"], 0)
+            self.assertEqual(final["summary"]["unchanged_by_metadata"], 1)
+
+            os.utime(session, (old_enough + 120, old_enough + 120))
+            metadata_bundle = root / "metadata-only.json"
+            subprocess.run(
+                [*collect_command, "--output", str(metadata_bundle)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            metadata_only = json.loads(metadata_bundle.read_text(encoding="utf-8"))
+            self.assertEqual(metadata_only["summary"]["included_sessions"], 0)
+            self.assertEqual(metadata_only["summary"]["candidate_sessions"], 1)
+            self.assertEqual(metadata_only["summary"]["unchanged_by_content"], 1)
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(COMMITTER),
+                    "--bundle",
+                    str(metadata_bundle),
+                    "--checkpoint",
+                    str(checkpoint),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+    def test_checkpoint_rejects_concurrent_state_change(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            codex_home = root / "codex"
+            session = codex_home / "sessions" / "one.jsonl"
+            checkpoint = codex_home / "personalization" / "processing-state.json"
+            bundle = root / "bundle.json"
+            write_session(session, "session-one", "Prefer boring technology.")
+            old_enough = datetime.now(tz=timezone.utc).timestamp() - 3600
+            os.utime(session, (old_enough, old_enough))
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(COLLECTOR),
+                    "--codex-home",
+                    str(codex_home),
+                    "--checkpoint",
+                    str(checkpoint),
+                    "--output",
+                    str(bundle),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            checkpoint.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint.write_text(
+                json.dumps({"schema_version": 1, "updated_at": None, "sessions": {}}),
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(COMMITTER),
+                    "--bundle",
+                    str(bundle),
+                    "--checkpoint",
+                    str(checkpoint),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("changed after collection", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
-

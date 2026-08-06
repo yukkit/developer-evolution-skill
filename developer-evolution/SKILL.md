@@ -37,6 +37,7 @@ personalization/
 ├── developer-profile.md
 ├── instruction-history.md
 ├── watchlist.md
+├── processing-state.json
 ├── evidence/
 └── proposals/
 ```
@@ -47,12 +48,14 @@ Initialize missing files non-destructively with `scripts/init_workspace.py`. Nev
 
 1. Read [references/evidence-policy.md](references/evidence-policy.md) completely.
 2. Read the current personalization files and the global `<CODEX_HOME>/AGENTS.md` when they exist.
-3. Run `scripts/collect_history.py` from this skill directory. By default, scan up to 100 completed sessions from the last 90 days and skip sessions active within 15 minutes.
+3. Run `scripts/collect_history.py` from this skill directory. By default, scan up to 100 new or changed completed sessions from the last 90 days, skip sessions active within 15 minutes, and compare against `processing-state.json`.
 4. Write the redacted evidence bundle under the personalization `evidence/` directory, never inside a project repository.
-5. Analyze repeated patterns across distinct sessions. Collapse duplicate statements inherited through resumed or forked sessions by message fingerprint.
-6. Compare candidate preferences with the current profile, watchlist, instruction history, and global instructions.
-7. Read [references/proposal-format.md](references/proposal-format.md) completely and write a dated proposal under `proposals/`.
-8. Present a concise summary and ask the user which numbered proposals to approve. Do not apply them in the same turn unless the user already gave explicit approval.
+5. If the bundle contains no new or changed sessions, report that the analysis is current. Commit metadata-only candidates when present, then stop.
+6. Analyze repeated patterns across distinct sessions. Collapse duplicate statements inherited through resumed or forked sessions by message fingerprint.
+7. Compare candidate preferences with the current profile, watchlist, instruction history, unresolved proposals, and global instructions.
+8. Read [references/proposal-format.md](references/proposal-format.md) completely and write a dated proposal under `proposals/`.
+9. Only after the proposal or no-change report is safely written, run `scripts/commit_checkpoint.py` against the JSON evidence bundle. If collection or analysis fails, do not commit the checkpoint.
+10. Present a concise summary and ask the user which numbered proposals to approve. Do not apply them in the same turn unless the user already gave explicit approval.
 
 Example collection command:
 
@@ -61,10 +64,29 @@ python3 <skill-dir>/scripts/collect_history.py \
   --codex-home <codex-home> \
   --days 90 \
   --max-sessions 100 \
+  --checkpoint <codex-home>/personalization/processing-state.json \
   --output <codex-home>/personalization/evidence/YYYY-MM-DD.json
 ```
 
-Use `--include-archived` only when the user requests a broad historical review. Use `--format markdown` for a human-readable bundle. Use `--user-only` only when assistant context is unnecessary.
+Commit after successful analysis:
+
+```bash
+python3 <skill-dir>/scripts/commit_checkpoint.py \
+  --bundle <codex-home>/personalization/evidence/YYYY-MM-DD.json \
+  --checkpoint <codex-home>/personalization/processing-state.json \
+  --proposal <codex-home>/personalization/proposals/YYYY-MM-DD.md
+```
+
+Use `--include-archived` only when the user requests a broad historical review. Use `--full` for an explicit reconciliation scan that ignores unchanged-session skips. Use JSON evidence when committing a checkpoint; Markdown evidence is human-readable but cannot be committed. Use `--user-only` only when assistant context is unnecessary.
+
+## Maintain checkpoint integrity
+
+- Treat `processing-state.json` as generated operational state, not preference evidence.
+- Record a session as processed only after its analysis output is durable.
+- Let the commit script reject a stale base digest; rerun collection instead of merging concurrent checkpoint changes manually.
+- Reprocess a session when its file metadata, extraction settings, or content fingerprint changes.
+- Do not prune missing or archived sessions automatically.
+- Run a full reconciliation periodically or when collection/redaction behavior changes materially.
 
 ## Judge candidate instructions
 
@@ -105,4 +127,3 @@ Never infer that approval of one item approves the whole proposal. Never remove 
 - Accept user-provided ChatGPT exports or transcript files as additional inputs, but label their source and apply the same evidence and privacy rules.
 - Treat generated memories as secondary context, not independent evidence. Several memories derived from one chat still count as one session.
 - Do not scrape authenticated ChatGPT history or request credentials.
-

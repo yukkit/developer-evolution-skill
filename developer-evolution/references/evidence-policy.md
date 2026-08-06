@@ -17,6 +17,7 @@ Items 1–4 can support a conclusion. Item 5 can help locate or interpret primar
 ## Counting rules
 
 - Count distinct source sessions, not message count.
+- Treat checkpoint entries as processing metadata, never as preference evidence.
 - Count repeated text copied into a fork or resumed transcript once. Use message fingerprints to detect duplicates.
 - Count several examples from one project as one context unless the user explicitly states the preference is global.
 - Do not count tool outputs, system/developer instructions, repository documentation, or assistant suggestions as user preferences.
@@ -54,4 +55,4 @@ Classify every candidate as one of:
 - Cite evidence with session ID, date, working-directory label, and message fingerprint.
 - Never persist credentials, private keys, bearer tokens, signed URLs, or unrelated personal information.
 - Keep evidence bundles out of Git repositories and warn before sharing them.
-
+- Commit a checkpoint only after the corresponding analysis artifact is safely written. A committed checkpoint means “analyzed,” not “accepted by the user.”
