@@ -9,6 +9,9 @@ import os
 from pathlib import Path
 
 
+WORKSPACE_NAME = "developer-evolution"
+
+
 PROFILE = """# Developer Profile
 
 This file contains evidence-backed observations about the developer. It is not automatically loaded as an instruction file.
@@ -53,7 +56,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--workspace",
         type=Path,
-        help="Explicit workspace path. Defaults to <codex-home>/personalization.",
+        help=(
+            "Explicit workspace path. Defaults to "
+            "<codex-home>/personalization/developer-evolution."
+        ),
     )
     return parser.parse_args()
 
@@ -82,7 +88,7 @@ def main() -> int:
     workspace = (
         args.workspace.expanduser().resolve()
         if args.workspace
-        else codex_home / "personalization"
+        else codex_home / "personalization" / WORKSPACE_NAME
     )
     workspace.mkdir(parents=True, exist_ok=True)
     (workspace / "evidence").mkdir(exist_ok=True)
@@ -104,4 +110,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

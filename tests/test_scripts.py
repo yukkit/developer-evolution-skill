@@ -97,10 +97,19 @@ class ScriptTests(unittest.TestCase):
             codex_home = Path(temporary) / "codex"
             command = [sys.executable, str(INITIALIZER), "--codex-home", str(codex_home)]
             first = json.loads(subprocess.check_output(command, text=True))
-            profile = codex_home / "personalization" / "developer-profile.md"
+            profile = (
+                codex_home
+                / "personalization"
+                / "developer-evolution"
+                / "developer-profile.md"
+            )
             profile.write_text("custom profile\n", encoding="utf-8")
             second = json.loads(subprocess.check_output(command, text=True))
 
+            self.assertEqual(
+                Path(first["workspace"]),
+                codex_home / "personalization" / "developer-evolution",
+            )
             self.assertEqual(first["files"]["developer-profile.md"], "created")
             self.assertEqual(second["files"]["developer-profile.md"], "existing")
             self.assertEqual(profile.read_text(encoding="utf-8"), "custom profile\n")
@@ -151,6 +160,13 @@ class ScriptTests(unittest.TestCase):
             self.assertEqual(bundle["summary"]["active"], 1)
             self.assertEqual(bundle["summary"]["too_old"], 1)
             self.assertEqual(bundle["summary"]["redactions"]["credential"], 1)
+            self.assertEqual(
+                Path(bundle["checkpoint"]["path"]),
+                codex_home
+                / "personalization"
+                / "developer-evolution"
+                / "processing-state.json",
+            )
             session = bundle["sessions"][0]
             self.assertEqual(session["session_id"], "session-included")
             self.assertEqual(session["message_count"], 2)
@@ -192,7 +208,12 @@ class ScriptTests(unittest.TestCase):
             root = Path(temporary)
             codex_home = root / "codex"
             session = codex_home / "sessions" / "one.jsonl"
-            checkpoint = codex_home / "personalization" / "processing-state.json"
+            checkpoint = (
+                codex_home
+                / "personalization"
+                / "developer-evolution"
+                / "processing-state.json"
+            )
             first_bundle = root / "first.json"
             proposal = root / "proposal.md"
             write_session(session, "session-one", "Prefer explicit code.")
@@ -349,7 +370,12 @@ class ScriptTests(unittest.TestCase):
             root = Path(temporary)
             codex_home = root / "codex"
             session = codex_home / "sessions" / "one.jsonl"
-            checkpoint = codex_home / "personalization" / "processing-state.json"
+            checkpoint = (
+                codex_home
+                / "personalization"
+                / "developer-evolution"
+                / "processing-state.json"
+            )
             bundle = root / "bundle.json"
             write_session(session, "session-one", "Prefer boring technology.")
             old_enough = datetime.now(tz=timezone.utc).timestamp() - 3600

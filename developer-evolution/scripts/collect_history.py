@@ -25,6 +25,7 @@ HOST_CONTEXT_PATTERNS = [
 
 # Bump this when message selection, normalization, or redaction semantics change.
 EXTRACTION_REVISION = 1
+WORKSPACE_NAME = "developer-evolution"
 
 
 @dataclass
@@ -135,7 +136,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--checkpoint",
         type=Path,
-        help="Checkpoint file. Defaults to <codex-home>/personalization/processing-state.json.",
+        help=(
+            "Checkpoint file. Defaults to "
+            "<codex-home>/personalization/developer-evolution/processing-state.json."
+        ),
     )
     parser.add_argument(
         "--full",
@@ -375,7 +379,10 @@ def build_bundle(args: argparse.Namespace) -> dict[str, Any]:
     checkpoint_path = (
         args.checkpoint.expanduser().resolve()
         if args.checkpoint
-        else codex_home / "personalization" / "processing-state.json"
+        else codex_home
+        / "personalization"
+        / WORKSPACE_NAME
+        / "processing-state.json"
     )
     checkpoint, checkpoint_digest = load_checkpoint(checkpoint_path)
     checkpoint_sessions = checkpoint["sessions"]

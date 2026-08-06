@@ -30,16 +30,17 @@ If the request is ambiguous, use Analyze mode.
 
 ## Use the personalization workspace
 
-Resolve `CODEX_HOME` from the environment, falling back to `~/.codex`. Store generated state under `<CODEX_HOME>/personalization/`:
+Resolve `CODEX_HOME` from the environment, falling back to `~/.codex`. Store all generated state in a skill-specific namespace under `<CODEX_HOME>/personalization/developer-evolution/`:
 
 ```text
 personalization/
-├── developer-profile.md
-├── instruction-history.md
-├── watchlist.md
-├── processing-state.json
-├── evidence/
-└── proposals/
+└── developer-evolution/
+    ├── developer-profile.md
+    ├── instruction-history.md
+    ├── watchlist.md
+    ├── processing-state.json
+    ├── evidence/
+    └── proposals/
 ```
 
 Initialize missing files non-destructively with `scripts/init_workspace.py`. Never overwrite an existing file during initialization.
@@ -47,9 +48,9 @@ Initialize missing files non-destructively with `scripts/init_workspace.py`. Nev
 ## Analyze history
 
 1. Read [references/evidence-policy.md](references/evidence-policy.md) completely.
-2. Read the current personalization files and the global `<CODEX_HOME>/AGENTS.md` when they exist.
+2. Read the current files under `<CODEX_HOME>/personalization/developer-evolution/` and the global `<CODEX_HOME>/AGENTS.md` when they exist.
 3. Run `scripts/collect_history.py` from this skill directory. By default, scan up to 100 new or changed completed sessions from the last 90 days, skip sessions active within 15 minutes, and compare against `processing-state.json`.
-4. Write the redacted evidence bundle under the personalization `evidence/` directory, never inside a project repository.
+4. Write the redacted evidence bundle under the namespaced `evidence/` directory, never inside a project repository.
 5. If the bundle contains no new or changed sessions, report that the analysis is current. Commit metadata-only candidates when present, then stop.
 6. Analyze repeated patterns across distinct sessions. Collapse duplicate statements inherited through resumed or forked sessions by message fingerprint.
 7. Compare candidate preferences with the current profile, watchlist, instruction history, unresolved proposals, and global instructions.
@@ -64,17 +65,17 @@ python3 <skill-dir>/scripts/collect_history.py \
   --codex-home <codex-home> \
   --days 90 \
   --max-sessions 100 \
-  --checkpoint <codex-home>/personalization/processing-state.json \
-  --output <codex-home>/personalization/evidence/YYYY-MM-DD.json
+  --checkpoint <codex-home>/personalization/developer-evolution/processing-state.json \
+  --output <codex-home>/personalization/developer-evolution/evidence/YYYY-MM-DD.json
 ```
 
 Commit after successful analysis:
 
 ```bash
 python3 <skill-dir>/scripts/commit_checkpoint.py \
-  --bundle <codex-home>/personalization/evidence/YYYY-MM-DD.json \
-  --checkpoint <codex-home>/personalization/processing-state.json \
-  --proposal <codex-home>/personalization/proposals/YYYY-MM-DD.md
+  --bundle <codex-home>/personalization/developer-evolution/evidence/YYYY-MM-DD.json \
+  --checkpoint <codex-home>/personalization/developer-evolution/processing-state.json \
+  --proposal <codex-home>/personalization/developer-evolution/proposals/YYYY-MM-DD.md
 ```
 
 Use `--include-archived` only when the user requests a broad historical review. Use `--full` for an explicit reconciliation scan that ignores unchanged-session skips. Use JSON evidence when committing a checkpoint; Markdown evidence is human-readable but cannot be committed. Use `--user-only` only when assistant context is unnecessary.
