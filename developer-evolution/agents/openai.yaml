@@ -1,0 +1,4 @@
+interface:
+  display_name: "Developer Evolution"
+  short_description: "Turn Codex history into reviewed working agreements"
+  default_prompt: "Use $developer-evolution to analyze my recent Codex history and propose evidence-backed updates to my working agreements."
