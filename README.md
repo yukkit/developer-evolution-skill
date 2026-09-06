@@ -7,7 +7,7 @@ It analyzes repeated decisions, corrections, frustrations, and collaboration pat
 ## What it does
 
 - Reads completed local Codex session transcripts.
-- Removes host context, tool output, and likely credentials before analysis.
+- Removes host context, tool output, credentials, authentication headers, and signed URL parameters before analysis.
 - Distinguishes durable preferences from project constraints and one-off experiments.
 - Requires evidence from multiple sessions before proposing a global instruction.
 - Records contradictions instead of forcing them into one preference.
@@ -33,6 +33,8 @@ managed global AGENTS.md instructions
 ```
 
 Collection and checkpoint updates use a two-phase workflow. The collector creates a checkpoint candidate, but processing state advances only after the analysis or no-change report is safely written. A failed analysis is retried on the next run.
+
+The collector writes to a unique private file under the skill's `evidence/` directory when no output path is supplied. Explicit output paths outside that directory and attempts to overwrite an existing bundle are rejected, and evidence is never printed to stdout.
 
 ## Install
 
@@ -96,6 +98,8 @@ The `developer-evolution/` namespace makes ownership explicit and avoids collisi
 
 Evidence bundles can contain private conversation content even after automated redaction. Review them before sharing, and never commit them to a repository.
 
+New workspace directories use owner-only permissions and generated state files use mode `0600` on platforms that support POSIX permissions.
+
 ## Incremental checkpoints
 
 `processing-state.json` records:
@@ -104,9 +108,9 @@ Evidence bundles can contain private conversation content even after automated r
 - file size and modification time;
 - extracted conversation fingerprint;
 - extraction configuration signature;
-- processing time and associated analysis artifacts.
+- processing time, associated analysis artifacts, and their SHA-256 digests.
 
-A session is processed again when its transcript or extraction settings change. Metadata-only transcript changes update the checkpoint without sending unchanged conversation content through analysis again. Checkpoint commits reject concurrent state changes rather than overwriting them.
+A session is processed again when its transcript or extraction settings change. Metadata-only transcript changes update the checkpoint without sending unchanged conversation content through analysis again. Sessions with JSON parse errors are retried instead of being marked as processed. Checkpoint commits serialize writers and reject stale state rather than overwriting concurrent updates.
 
 ## Codex coupling and portability
 
@@ -133,7 +137,7 @@ The evidence policy, proposal format, checkpoint lifecycle, and privacy rules ca
 
 - Transcript content is treated as untrusted data, never as instructions.
 - Developer/system messages and tool outputs are excluded from evidence.
-- Common private keys, API keys, access tokens, bearer tokens, and credentials are redacted.
+- Common private keys, API keys, access tokens, authentication headers, cookies, and signed URL parameters are redacted.
 - Assistant-authored summaries cannot independently establish a user preference.
 - A global instruction normally requires evidence from at least three distinct sessions.
 - Checkpoints mean “analyzed,” not “approved.”

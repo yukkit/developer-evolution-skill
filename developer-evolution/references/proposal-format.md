@@ -58,4 +58,8 @@ Write one Markdown file per analysis using this structure:
 - Use short paraphrases instead of long transcript quotes.
 - Put Medium- and Low-confidence observations in the Watchlist unless the user explicitly requested otherwise.
 - Do not include a pre-approved state. The user must name or check each approved item.
+- Include the exact absolute evidence bundle path so checkpoint commits can bind the analysis artifact to its input.
 
+## No-change reports
+
+When there are no actionable changes, write a compact Markdown report under `proposals/` containing the analysis date, exact absolute evidence bundle path, session counts, parse-error count, and the reason no proposal was created. Use this report as the required `--proposal` argument when committing metadata-only checkpoint candidates.

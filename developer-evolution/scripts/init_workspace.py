@@ -8,7 +8,6 @@ import json
 import os
 from pathlib import Path
 
-
 WORKSPACE_NAME = "developer-evolution"
 
 
@@ -75,11 +74,20 @@ def resolve_codex_home(value: Path | None) -> Path:
 
 def create_file(path: Path, content: str) -> str:
     try:
-        with path.open("x", encoding="utf-8") as handle:
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
             handle.write(content)
         return "created"
     except FileExistsError:
+        if os.name != "nt" and path.is_file():
+            path.chmod(0o600)
         return "existing"
+
+
+def ensure_private_directory(path: Path) -> None:
+    path.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if os.name != "nt":
+        path.chmod(0o700)
 
 
 def main() -> int:
@@ -90,14 +98,16 @@ def main() -> int:
         if args.workspace
         else codex_home / "personalization" / WORKSPACE_NAME
     )
-    workspace.mkdir(parents=True, exist_ok=True)
-    (workspace / "evidence").mkdir(exist_ok=True)
-    (workspace / "proposals").mkdir(exist_ok=True)
+    ensure_private_directory(workspace)
+    ensure_private_directory(workspace / "evidence")
+    ensure_private_directory(workspace / "proposals")
 
     results = {
         "workspace": str(workspace),
         "files": {
-            "developer-profile.md": create_file(workspace / "developer-profile.md", PROFILE),
+            "developer-profile.md": create_file(
+                workspace / "developer-profile.md", PROFILE
+            ),
             "instruction-history.md": create_file(
                 workspace / "instruction-history.md", HISTORY
             ),

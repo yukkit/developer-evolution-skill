@@ -53,6 +53,7 @@ Classify every candidate as one of:
 - Analyze the redacted evidence bundle rather than raw transcripts whenever possible.
 - Summarize evidence in persistent files. Do not copy long transcript passages.
 - Cite evidence with session ID, date, working-directory label, and message fingerprint.
-- Never persist credentials, private keys, bearer tokens, signed URLs, or unrelated personal information.
+- Never persist credentials, private keys, authentication headers, signed URL parameters, or unrelated personal information.
 - Keep evidence bundles out of Git repositories and warn before sharing them.
+- Keep evidence bundles in the private developer-evolution workspace and out of tool output.
 - Commit a checkpoint only after the corresponding analysis artifact is safely written. A committed checkpoint means “analyzed,” not “accepted by the user.”
