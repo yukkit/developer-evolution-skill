@@ -18,18 +18,19 @@ from _checkpoint import CHECKPOINT_SCHEMA_VERSION, load_checkpoint, write_privat
 
 HOST_CONTEXT_PATTERNS = [
     re.compile(
-        r"<(?:environment_context|recommended_plugins|skill)(?:\s[^>]*)?>.*?</(?:environment_context|recommended_plugins|skill)>",
+        r"<(?P<tag>environment_context|recommended_plugins|skill)(?:\s[^>]*)?>"
+        r".*?</(?P=tag)>",
         re.DOTALL | re.IGNORECASE,
     ),
     re.compile(r"<INSTRUCTIONS>.*?</INSTRUCTIONS>", re.DOTALL | re.IGNORECASE),
     re.compile(
-        r"^# AGENTS\.md instructions for [^\n]*(?:\n|$)",
+        r"^# AGENTS\.md instructions(?: for [^\n]*)?(?:\n|$)",
         re.MULTILINE | re.IGNORECASE,
     ),
 ]
 
 # Bump this when message selection, normalization, or redaction semantics change.
-EXTRACTION_REVISION = 2
+EXTRACTION_REVISION = 3
 WORKSPACE_NAME = "developer-evolution"
 
 PRIVATE_KEY_PATTERN = re.compile(
@@ -55,12 +56,15 @@ HEADER_CREDENTIAL_PATTERN = re.compile(
     r"(?!\[REDACTED:)([^\r\n]+)"
 )
 CREDENTIAL_PATTERN = re.compile(
-    r"(?im)(\b(?:api[_-]?key|access[_-]?key|access[_-]?token|auth[_-]?token|"
-    r"client[_-]?secret|password|passwd|private[_-]?token|refresh[_-]?token|"
-    r"session[_-]?token|secret|token)\b\s*[:=]\s*)"
+    r"(?im)(\b(?:[a-z0-9]+[_-])*(?:api[_-]?key|access[_-]?key|"
+    r"access[_-]?token|auth[_-]?token|client[_-]?secret|password|passwd|"
+    r"private[_-]?token|refresh[_-]?token|session[_-]?token|secret[_-]?key|"
+    r"secret|token)\b\s*[:=]\s*)"
     r"(?!\[REDACTED:)([^\s,;]{6,})"
 )
-URL_CREDENTIAL_PATTERN = re.compile(r"(?i)(https?://[^\s/:]+:)([^@\s/]{3,})(@)")
+URL_CREDENTIAL_PATTERN = re.compile(
+    r"(?i)(\b[a-z][a-z0-9+.-]*://[^\s/:@]+:)([^@\s/]{3,})(@)"
+)
 
 
 @dataclass

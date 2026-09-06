@@ -145,13 +145,14 @@ class ScriptTests(unittest.TestCase):
             user_text = (
                 "<recommended_plugins>private host context</recommended_plugins>\n"
                 "<skill>injected skill instructions</skill>\n"
-                "# AGENTS.md instructions for /workspace/example\n"
+                "# AGENTS.md instructions\n"
                 "<INSTRUCTIONS>injected project instructions</INSTRUCTIONS>\n"
-                "I prefer explicit code. api_key=abcdef123456\n"
+                'I prefer explicit code. export KASMA_API_KEY="abcdef123456"\n'
                 "https://oss.example/object?OSSAccessKeyId=EXAMPLE123"
                 "&Expires=1999999999&Signature=FAKE_SIGNATURE_VALUE\n"
                 "https://example.test/download?token=FAKE_LONG_TOKEN_VALUE\n"
-                "Authorization: Basic FAKE_AUTH_VALUE"
+                "Authorization: Basic FAKE_AUTH_VALUE\n"
+                'POSTGRES_URL="postgresql://user:FAKE_DB_PASSWORD@db.example/test"'
             )
             write_session(included, "session-included", user_text)
             write_session(active, "session-active", "active session")
@@ -189,6 +190,7 @@ class ScriptTests(unittest.TestCase):
             self.assertEqual(bundle["summary"]["redactions"]["credential"], 1)
             self.assertEqual(bundle["summary"]["redactions"]["url-query-credential"], 3)
             self.assertEqual(bundle["summary"]["redactions"]["header-credential"], 1)
+            self.assertEqual(bundle["summary"]["redactions"]["url-credential"], 1)
             self.assertEqual(
                 Path(bundle["checkpoint"]["path"]),
                 codex_home
@@ -211,6 +213,7 @@ class ScriptTests(unittest.TestCase):
             self.assertNotIn("FAKE_SIGNATURE_VALUE", collected)
             self.assertNotIn("FAKE_LONG_TOKEN_VALUE", collected)
             self.assertNotIn("FAKE_AUTH_VALUE", collected)
+            self.assertNotIn("FAKE_DB_PASSWORD", collected)
             if os.name != "nt":
                 self.assertEqual(output.stat().st_mode & 0o777, 0o600)
 
