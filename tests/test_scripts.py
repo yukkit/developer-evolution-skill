@@ -114,24 +114,24 @@ class ScriptTests(unittest.TestCase):
                 str(codex_home),
             ]
             first = json.loads(subprocess.check_output(command, text=True))
-            profile = (
-                codex_home
-                / "personalization"
-                / "developer-evolution"
-                / "developer-profile.md"
-            )
-            profile.write_text("custom profile\n", encoding="utf-8")
+            history = workspace_path(codex_home, "instruction-history.md")
+            history.write_text("custom history\n", encoding="utf-8")
+            legacy = workspace_path(codex_home, "developer-profile.md")
+            self.assertFalse(legacy.exists())
+            legacy.write_text("legacy profile\n", encoding="utf-8")
             second = json.loads(subprocess.check_output(command, text=True))
 
             self.assertEqual(
                 Path(first["workspace"]),
                 codex_home / "personalization" / "developer-evolution",
             )
-            self.assertEqual(first["files"]["developer-profile.md"], "created")
-            self.assertEqual(second["files"]["developer-profile.md"], "existing")
-            self.assertEqual(profile.read_text(encoding="utf-8"), "custom profile\n")
+            self.assertEqual(first["files"]["instruction-history.md"], "created")
+            self.assertEqual(second["files"]["instruction-history.md"], "existing")
+            self.assertEqual(history.read_text(encoding="utf-8"), "custom history\n")
+            self.assertEqual(legacy.read_text(encoding="utf-8"), "legacy profile\n")
+            self.assertFalse((codex_home / "skills").exists())
             if os.name != "nt":
-                self.assertEqual(profile.stat().st_mode & 0o777, 0o600)
+                self.assertEqual(history.stat().st_mode & 0o777, 0o600)
                 self.assertEqual(Path(first["workspace"]).stat().st_mode & 0o777, 0o700)
 
     def test_collection_filters_redacts_deduplicates_and_bounds(self) -> None:

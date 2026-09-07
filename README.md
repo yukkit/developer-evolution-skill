@@ -1,6 +1,6 @@
 # Developer Evolution
 
-An auditable Codex skill that turns local coding conversations into evidence-backed developer preferences and working agreements.
+An auditable Codex skill that turns local coding conversations into an evolving personal `developer-profile` skill and concise global working agreements.
 
 It analyzes repeated decisions, corrections, frustrations, and collaboration patterns across prior sessions. It proposes changes for review instead of silently rewriting its own instructions.
 
@@ -12,7 +12,9 @@ It analyzes repeated decisions, corrections, frustrations, and collaboration pat
 - Requires evidence from multiple sessions before proposing a global instruction.
 - Records contradictions instead of forcing them into one preference.
 - Produces numbered proposals that require explicit human approval.
-- Updates only a managed block in the global `AGENTS.md` after approval.
+- Creates and continuously improves the profile skill's preferences, trigger description, scope, exceptions, and reference organization on subsequent requested runs.
+- Preserves contextual and project-specific preferences without requiring them to become global rules.
+- Updates the profile skill and/or a managed block in global `AGENTS.md` within the user's authorization.
 - Uses incremental checkpoints to skip unchanged sessions.
 - Runs only when explicitly invoked as `$developer-evolution`.
 
@@ -23,18 +25,22 @@ Codex sessions
       ↓
 redacted evidence bundle
       ↓
-developer profile + watchlist comparison
+profile skill + global rules + watchlist + decision history
       ↓
 numbered proposal
       ↓
 human approval
       ↓
-managed global AGENTS.md instructions
+developer-profile skill      global AGENTS.md agreements
+      ↓                              ↓
+contextual task guidance     concise stable rules
 ```
 
 Collection and checkpoint updates use a two-phase workflow. The collector creates a checkpoint candidate, but processing state advances only after the analysis or no-change report is safely written. A failed analysis is retried on the next run.
 
 The collector writes to a unique private file under the skill's `evidence/` directory when no output path is supplied. Explicit output paths outside that directory and attempts to overwrite an existing bundle are rejected, and evidence is never printed to stdout.
+
+`developer-profile` is the daily-use output: Codex can select it automatically for relevant engineering, product, or communication choices, then read only the applicable profile sections. Its content evolves through reviewed additions, refinements, merges, and removals. `developer-evolution` remains the explicitly invoked author of those changes; neither skill runs a background process. Automatic selection of the profile is permitted, not guaranteed on every task.
 
 ## Install
 
@@ -64,6 +70,15 @@ Later runs are incremental by default:
 Use $developer-evolution to analyze new or changed sessions and propose updates.
 ```
 
+To create the daily-use skill from an existing approved descriptive profile:
+
+```text
+Use $developer-evolution to migrate my approved developer profile into a
+developer-profile skill for daily use, preserving its scope and exceptions.
+```
+
+The creation helper consumes a reviewed profile with runtime authorization; it never imports watchlist or rejected candidates. Later approvals edit the existing skill rather than resetting it from a template. Reinstalling `developer-evolution` preserves the separately generated personal skill.
+
 Use a full reconciliation when needed:
 
 ```text
@@ -74,19 +89,22 @@ Use $developer-evolution to perform a full reconciliation scan and propose updat
 
 | Mode | Behavior |
 | --- | --- |
-| Analyze | Collect new or changed history and generate proposals. This is the default. |
+| Analyze | Compare both outputs and propose profile-skill and/or global-rule changes. This is the default. |
 | Bootstrap | Initialize the personalization workspace, then analyze available history. |
-| Apply | Apply only explicitly approved proposal items. |
-| Status | Report the current profile, watchlist, proposals, and managed instructions. |
+| Apply | Create or evolve the profile skill and/or global rules within explicit authorization; record rejections. |
+| Status | Report the profile skill, watchlist, proposal decisions, and managed instructions. |
 
 ## Local data
 
 Generated personal state stays outside this repository under `CODEX_HOME` (normally `~/.codex`):
 
 ```text
-~/.codex/personalization/
-└── developer-evolution/
-    ├── developer-profile.md
+~/.codex/
+├── skills/developer-profile/
+│   ├── SKILL.md
+│   ├── agents/openai.yaml
+│   └── references/profile.md
+└── personalization/developer-evolution/
     ├── instruction-history.md
     ├── watchlist.md
     ├── processing-state.json
@@ -95,6 +113,8 @@ Generated personal state stays outside this repository under `CODEX_HOME` (norma
 ```
 
 The `developer-evolution/` namespace makes ownership explicit and avoids collisions with other personalization skills.
+
+The canonical profile lives inside the generated skill. Legacy `personalization/developer-evolution/developer-profile.md` is left untouched during analysis; an authorized migration replaces it with a pointer after validating the runtime copy. Only generic scaffolding is distributed in this repository. Personal entries, skill descriptions tailored to the user, drafts, and evidence stay local.
 
 Evidence bundles can contain private conversation content even after automated redaction. Review them before sharing, and never commit them to a repository.
 
@@ -141,7 +161,8 @@ The evidence policy, proposal format, checkpoint lifecycle, and privacy rules ca
 - Assistant-authored summaries cannot independently establish a user preference.
 - A global instruction normally requires evidence from at least three distinct sessions.
 - Checkpoints mean “analyzed,” not “approved.”
-- Active instructions change only after explicit approval of numbered proposals.
+- Active instructions change only within explicit user authorization, normally through numbered proposals.
+- A concrete user request to migrate an already confirmed profile also authorizes that migration. Bootstrap alone never installs runtime guidance, and rejection cannot be bypassed through a profile entry or trigger description.
 
 ## Repository layout
 
@@ -149,17 +170,23 @@ The evidence policy, proposal format, checkpoint lifecycle, and privacy rules ca
 developer-evolution/
 ├── SKILL.md
 ├── agents/openai.yaml
+├── assets/
+│   ├── profile-skill.md
+│   └── profile-openai.yaml
 ├── references/
 │   ├── evidence-policy.md
+│   ├── profile-evolution.md
 │   └── proposal-format.md
 └── scripts/
     ├── collect_history.py
     ├── commit_checkpoint.py
+    ├── create_profile_skill.py
     ├── init_workspace.py
     └── _checkpoint.py
 
 tests/
-└── test_scripts.py
+├── test_scripts.py
+└── test_profile_skill.py
 ```
 
 ## Development

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Developer Profile"
+  short_description: "Apply confirmed developer preferences to the task"
+  default_prompt: "Use $developer-profile to apply my relevant preferences to this task."
+
+policy:
+  allow_implicit_invocation: true

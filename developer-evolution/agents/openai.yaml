@@ -1,7 +1,7 @@
 interface:
   display_name: "Developer Evolution"
-  short_description: "Turn Codex history into reviewed working agreements"
-  default_prompt: "Use $developer-evolution to analyze my recent Codex history and propose evidence-backed updates to my working agreements."
+  short_description: "Evolve a personal profile skill and working agreements"
+  default_prompt: "Use $developer-evolution to analyze my recent Codex history and propose updates to my developer-profile skill and global working agreements."
 
 policy:
   allow_implicit_invocation: false

@@ -11,35 +11,14 @@ from pathlib import Path
 WORKSPACE_NAME = "developer-evolution"
 
 
-PROFILE = """# Developer Profile
-
-This file contains evidence-backed observations about the developer. It is not automatically loaded as an instruction file.
-
-## Technical preferences
-
-## Coding philosophy
-
-## Decision patterns
-
-## Code style
-
-## AI collaboration style
-
-## Recurring frustrations
-
-## Communication style
-
-## Inconsistencies and changes
-"""
-
 HISTORY = """# Instruction History
 
-Append approved developer-evolution changes here. Keep evidence references concise and never include secrets or full transcripts.
+Record approved and rejected developer-evolution proposals here. Keep evidence references concise and never include secrets or full transcripts.
 """
 
 WATCHLIST = """# Preference Watchlist
 
-Store plausible patterns that do not yet meet the evidence threshold for active instructions.
+Store uncertain observations awaiting evidence or confirmation. These are not runtime preferences.
 """
 
 
@@ -105,9 +84,6 @@ def main() -> int:
     results = {
         "workspace": str(workspace),
         "files": {
-            "developer-profile.md": create_file(
-                workspace / "developer-profile.md", PROFILE
-            ),
             "instruction-history.md": create_file(
                 workspace / "instruction-history.md", HISTORY
             ),

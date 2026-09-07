@@ -29,7 +29,9 @@ Items 1–4 can support a conclusion. Item 5 can help locate or interpret primar
 - **Medium**: Two distinct sessions, or one unusually explicit statement, with no strong contradiction.
 - **Low**: One session, an inferred behavior, weak acceptance, or material ambiguity.
 
-Only High-confidence conclusions are eligible for a new global `AGENTS.md` instruction. Keep Medium- and Low-confidence candidates on the watchlist unless the user explicitly promotes them.
+Only High-confidence conclusions are eligible for a new global `AGENTS.md` instruction, normally supported by at least three sessions across two contexts. This threshold does not apply to all profile entries: a clear explicit preference or correction can support a Medium-confidence proposal for the contextual profile skill. Apply such entries only after authorization for runtime use and preserve their scope and exceptions. Approval does not increase evidence confidence. Low-confidence, ambiguous, and unconfirmed candidates remain in the analysis watchlist, outside runtime guidance.
+
+Keyword matches are discovery aids, not semantic evidence. Read statements and surrounding context to distinguish a user's preference from pasted reports, quoted suggestions, questions, code examples, and descriptions of application behavior. Review novel messages beyond preselected keywords before concluding there is no change.
 
 ## Scope classification
 
@@ -38,15 +40,16 @@ Classify every candidate as one of:
 - **Global collaboration**: How Codex should communicate or work with the user everywhere.
 - **Global engineering**: A technology-independent engineering principle.
 - **Technology preference**: Applies when a named language, framework, or tool is relevant.
-- **Project-specific**: Belongs in that repository's `AGENTS.md`, not the global file.
+- **Project-specific**: May be preserved as a clearly scoped profile entry, or routed to that repository's `AGENTS.md` when an operational rule is appropriate; never generalize it into the global file.
 - **Temporary/contextual**: Do not persist.
 
 ## Contradictions and recency
 
-- Preserve both sides of a contradiction in the profile.
+- Preserve relevant exceptions to confirmed preferences in the profile. Keep unresolved competing claims in analysis until the applicable distinction is clear.
 - Prefer a newer position only when the user explicitly changed their mind or repeated the newer behavior across sessions.
 - Propose modifying or removing an instruction only when evidence meets the same threshold required to add one.
 - Avoid converting situational tradeoffs into absolute instructions.
+- Check decision history before proposing or applying changes. Do not reintroduce a rejected proposal through a profile entry, description, or renamed rule. Reconsider only if the user reopens it or explicitly changes the relevant preference.
 
 ## Privacy
 
