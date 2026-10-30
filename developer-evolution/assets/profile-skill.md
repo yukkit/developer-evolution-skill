@@ -14,9 +14,9 @@ Infer the current activity from the task and find the relevant approved entries 
 | Activity | Look for approved preferences about |
 | --- | --- |
 | Design | User goals, scope, reuse fit, models, responsibility boundaries, and tradeoffs. |
-| Implementation | State and responsibility ownership, change scope, recurring fixes, and verification. |
-| Code review | Review criteria, applicable engineering constraints, scope, and exceptions. |
-| Code explanation | Depth, examples, mechanisms, tradeoffs, and response format. |
+| Implementation | State and responsibility ownership, change scope, reviewable handoffs, recurring fixes, and verification. |
+| Code review | Review criteria, applicable engineering constraints, scope, validation evidence, and exceptions. |
+| Code explanation | Depth, examples, mechanisms, tradeoffs, change walkthroughs, and response format. |
 
 A mixed task may use several rows. When the activity changes, consult newly relevant entries; unchanged entries already read in context do not need to be read again. Keep one canonical entry when it applies to several activities. If no entry applies, continue the task using the available instructions.
 
