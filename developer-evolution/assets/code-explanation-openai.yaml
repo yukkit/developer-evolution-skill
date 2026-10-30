@@ -1,0 +1,7 @@
+interface:
+  display_name: "Code Explanation"
+  short_description: "Explain code behavior, calls, and data flow"
+  default_prompt: "Use $code-explanation to explain the requested code or feature from its current implementation."
+
+policy:
+  allow_implicit_invocation: true

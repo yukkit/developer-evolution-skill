@@ -8,6 +8,10 @@ Keep universal, stable instructions short in global `AGENTS.md`. Use the profile
 
 A preference already addressed by another skill may still describe the user. Preserve the distinctive decision criterion and link to the authoritative instruction where useful; do not copy a domain workflow into the profile. Broadly sensible advice without evidence about this developer adds no value.
 
+Project implementation corrections normally belong in the affected repository's existing domain skill, or its `AGENTS.md` for a short project-wide invariant. Follow [engineering-corrections.md](engineering-corrections.md) to choose the target. Keep a distinct personal decision criterion or scoped pointer in the profile only when useful; do not duplicate repository rules here. A project-specific personal preference can remain private without becoming shared engineering policy.
+
+Code explanation preferences, such as useful examples or the level of detail needed, also belong here when supported and authorized. Current project behavior and call maps belong in project guidance, not the personal profile. Follow [code-explanation.md](code-explanation.md) when generating a general or project explanation skill; it can use relevant approved profile entries without duplicating them.
+
 ## Evolve content and discovery together
 
 On each analysis, inspect the current skill and decide whether any of these changes is useful:
@@ -16,9 +20,12 @@ On each analysis, inspect the current skill and decide whether any of these chan
 - **Add or refine:** Capture a new preference, narrow its scope, or add a counterexample that changes how it applies.
 - **Merge or remove:** Consolidate equivalent entries and retire superseded guidance while preserving the decision in history. Do not remove preferences just because the current batch did not mention them.
 - **Improve discovery:** Update the frontmatter description when approved topics change, or when actual usage shows missed or excessive activation. Describe recognizable task situations, not an instruction to activate on every turn.
+- **Improve activity routing:** Make substantive design, implementation, code review, and code explanation reach their relevant approved entries. Adapt the template's lookup categories to actual profile headings, using direct links where useful. Read newly relevant entries when the activity changes within a task, without making activities a fixed sequence or approval gate. One preference can serve several activities; do not duplicate its content or invent a preference to fill a category.
 - **Improve disclosure:** Keep `SKILL.md` short with topic routing to substantive references. Start with one `references/profile.md`; split it only when different tasks would benefit from loading different substantial sections. Update incoming links and remove duplicated active copies after a split.
 
 Represent every actionable change as `ADD`, `MODIFY`, or `REMOVE`, including metadata or organization changes. Explain the observed problem, exact affected files, before/after wording, and a realistic task showing why it matters. Use no-change confirmations when existing content works; do not force a new proposal per batch.
+
+If skill selection repeatedly misses the approved profile, propose a short global `AGENTS.md` route requiring the relevant activity and topic lookup for substantive work. Add it only within the user's authorization, preserving unrelated global instructions. Keep the actual preferences in the profile and applicable repository rules in their authoritative locations; factual answers and mechanical actions do not need the lookup. Creating a profile alone does not authorize changing global instructions.
 
 ## Profile entry format
 
@@ -49,7 +56,7 @@ For a new skill:
 
    The helper creates private `SKILL.md`, `agents/openai.yaml`, and `references/profile.md`. It refuses an existing destination, leaves the input untouched, and never reads sessions or changes global instructions. It scaffolds from reviewed input; it does not infer preferences or certify approval.
 
-3. Adapt the generated description and topic routing to the approved profile. Keep automatic selection enabled for the newly created daily-use skill; `developer-evolution` remains explicit-only. Preserve any later user-selected invocation policy when updating.
+3. Adapt the generated description, activity routes, and topic routing to the approved profile. Keep automatic selection enabled for the newly created daily-use skill; `developer-evolution` remains explicit-only. Preserve any later user-selected invocation policy when updating.
 4. Validate the created skill, its links, and copied content before migrating the legacy path. Keep a private snapshot if needed for recovery. Replace the old workspace `developer-profile.md` with a short link to the canonical reference only after successful validation, avoiding two editable profiles. Preserve old proposals/evidence for audit; do not rewrite artifacts already bound to checkpoints.
 5. Record the migration and authorized changes in `instruction-history.md`, including canonical paths and superseded files. Keep files `0600` and personal directories `0700` where supported.
 
@@ -60,8 +67,10 @@ On later approved updates, edit the existing skill and references in place. Do n
 Before finishing, check the changed behavior using realistic tasks:
 
 - A matching decision reaches the relevant preference, applies its scope/exception, and continues the original task.
+- A task that moves from design into implementation or review consults newly relevant entries without duplicating preferences or adding a confirmation step. Explanation requests reach the applicable communication preferences.
 - An unrelated fact or mechanical action does not trigger needless profile/history work.
 - A project-specific entry stays within its project and does not override current instructions or technical constraints.
+- A task extending existing code reaches any matching engineering correction, avoids the rejected behavior, and preserves allowed reuse and exceptions. Check an updated example where the original defect has been fixed as well.
 - A rejected or uncertain candidate is not present in entrypoint guidance, references, or discovery metadata.
 
 Use `skill-creator` validation when available. Structural checks do not prove correct retrieval or judgment; inspect the actual entrypoint and simulate the task when evaluating behavioral changes. Personal content stays local; the distributable repository contains only generic templates, scripts, and documentation.
