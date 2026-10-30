@@ -1,7 +1,7 @@
 interface:
   display_name: "Developer Evolution"
-  short_description: "Evolve a personal profile skill and working agreements"
-  default_prompt: "Use $developer-evolution to analyze my recent Codex history and propose updates to my developer-profile skill and global working agreements."
+  short_description: "Evolve preferences, project guidance, and explainers"
+  default_prompt: "Use $developer-evolution to analyze my recent Codex history and propose updates to my personal profile, repository guidance, code explanation skills, and working agreements."
 
 policy:
   allow_implicit_invocation: false
