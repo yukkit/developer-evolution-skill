@@ -136,6 +136,16 @@ skill content and destination before installing it; do not analyze history.
 
 A general `code-explanation` skill works with a snippet or an unfamiliar repository. A project version reuses an existing relevant repository skill or creates a focused explanation skill, with small references linking entrypoints, symbols, and important flows. It checks the relevant current source when answering, so saved project maps do not silently replace changed code. Personal explanation preferences remain in `developer-profile`; project skills also work for collaborators without that profile.
 
+The generated skill also explains a diff or PR for review: establish the comparison scope, explain observable before/after behavior, point to decisive code and constraints, and connect claims to validation evidence and its limits. Use the existing PR description or conversation, with detail proportional to the change. This supports independent review and human judgment without creating a report or skill for every PR.
+
+After generating the skill, ask for a review walkthrough with:
+
+```text
+Use $code-explanation to explain this PR for review. Show the behavior change,
+the key source locations and constraints, the available validation evidence,
+and what remains unverified. Keep the guide proportional to the change.
+```
+
 To explicitly authorize creation, name the scope and destination, for example:
 
 ```text

@@ -1,6 +1,6 @@
 # Generate and Evolve Code Explanation Skills
 
-Use this reference when the user wants a reusable code explanation skill, a project or subsystem guide, or improvements based on feedback about explanations. Support general explanation methods, project knowledge, and personal explanation preferences together without making them three copies of the same guidance.
+Use this reference when the user wants a reusable code explanation skill, a project or subsystem guide, a change-review walkthrough capability, or improvements based on feedback about explanations. Support general explanation methods, project knowledge, and personal explanation preferences together without making them three copies of the same guidance.
 
 ## Choose the output and scope
 
@@ -39,6 +39,14 @@ For example, an explanation skill for a synthetic import service might route “
 
 The runtime skill must recheck the relevant current source before making code-specific claims. If a locator is missing or the implementation differs, use the current code for the answer and flag the stale reference. Do not silently update stored guidance during ordinary explanation. This workflow does not add a background repository watcher or automatic refresh on each code edit.
 
+## Support review of a current change
+
+Retain the template's diff/PR explanation capability when generating general or project skills. A review walkthrough explains the actual requested comparison and its decisive behavior, constraints, evidence, and uncertainty. An entire module tour is unnecessary when a few locations explain the change. Authoring this capability does not authorize execution or a mandatory walkthrough on every coding task.
+
+Keep the reusable explanation method in the skill. Put change-specific review guidance in the existing PR description, conversation, or established project artifact; do not automatically generate a permanent skill or project-map entry for every PR. Preserve any explicit user choice of output. Bounded changes and preferred handoff styles belong in `developer-profile` only when supported and authorized, following [profile-evolution.md](profile-evolution.md). Do not turn them into universal file-count limits, fixed report templates, or additional approval gates.
+
+The explanation should help a human judge intent, tradeoffs, and remaining risk. Reviewers still need the authoritative requirements, actual diff, connected code, and relevant validation evidence. A producer's summary, passing tests, or agreement between agents cannot substitute for that assessment. The template distinguishes source conclusions, inferred intent, actual execution, and unverified claims; preserve those distinctions when adapting it.
+
 ## Use the existing proposal and application workflow
 
 **Analyze** stages the proposed skill content, project references, routing, and preference changes under private `proposals/`, naming exact eventual targets. The proposal must distinguish source-verified facts, inferred or unverified claims, and personal preferences. Follow [proposal-format.md](proposal-format.md). It must not install or update active skills.
@@ -58,6 +66,7 @@ Validate new or changed skills, metadata, and reference routes. Source checks es
 - A general request explains a small function without requiring a project map or collecting history.
 - A project request finds the relevant reference, follows current calls and state changes, and gives source locators for the explanation.
 - A stale reference is corrected in the answer from current code and reported, without silently rewriting the skill.
+- A diff/PR request resolves the comparison scope, checks relevant old and new behavior, and produces a concise review guide with source locations, validation evidence, and limits. Missing test-run evidence is not represented as a passing run, and a small change does not cause a module tour or standalone report.
 - An available approved preference changes the relevant presentation; an absent profile does not block explanation, and an inferred preference is not activated.
 - An unrelated task does not start a code tour, history scan, runtime update, or application execution.
 
